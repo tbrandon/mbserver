@@ -33,7 +33,6 @@ func NewRTUFrame(packet []byte) (*RTUFrame, error) {
 		Function: uint8(packet[1]),
 		Data:     packet[2 : pLen-2],
 	}
-
 	return frame, nil
 }
 
@@ -60,6 +59,11 @@ func (frame *RTUFrame) Bytes() []byte {
 	binary.LittleEndian.PutUint16(bytes[pLen:pLen+2], crc)
 
 	return bytes
+}
+
+// GetFunction returns the Modbus function code.
+func (frame *RTUFrame) GetAddress() uint8 {
+	return frame.Address
 }
 
 // GetFunction returns the Modbus function code.
