@@ -9,17 +9,17 @@ import (
 
 // ListenRTU starts the Modbus server listening to a serial device.
 // For example:  err := s.ListenRTU(&serial.Config{Address: "/dev/ttyUSB0"})
-func (s *Server) ListenRTU(serialConfig *serial.Config) (err error) {
+func (s *Server) ListenRTU(serialConfig *serial.Config, slaveId uint8) (err error) {
 	port, err := serial.Open(serialConfig)
 	if err != nil {
 		log.Fatalf("failed to open %s: %v\n", serialConfig.Address, err)
 	}
 	s.ports = append(s.ports, port)
-	go s.acceptSerialRequests(port)
+	go s.acceptSerialRequests(port, slaveId)
 	return err
 }
 
-func (s *Server) acceptSerialRequests(port serial.Port) {
+func (s *Server) acceptSerialRequests(port serial.Port, slaveId uint8) {
 	for {
 		buffer := make([]byte, 512)
 
@@ -41,10 +41,14 @@ func (s *Server) acceptSerialRequests(port serial.Port) {
 				log.Printf("bad serial frame error %v\n", err)
 				return
 			}
+			if frame.GetAddress() == slaveId {
+				request := &Request{port, frame}
+				s.requestChan <- request
+			} else {
+				log.Printf("wrong slave address")
+			}
 
-			request := &Request{port, frame}
-
-			s.requestChan <- request
+			
 		}
 	}
 }
