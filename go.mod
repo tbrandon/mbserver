@@ -1,4 +1,4 @@
-module mbserver
+module github.com/zhangrxiang/mbserver
 
 go 1.12
 
