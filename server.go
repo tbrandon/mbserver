@@ -15,7 +15,7 @@ type Server struct {
 	listeners        []net.Listener
 	ports            []serial.Port
 	requestChan      chan *Request
-	function         [256](func(*Server, Framer) ([]byte, *Exception))
+	function         [256]func(*Server, Framer) ([]byte, *Exception)
 	DiscreteInputs   []byte
 	Coils            []byte
 	HoldingRegisters []uint16
@@ -84,8 +84,10 @@ func (s *Server) handle(request *Request) Framer {
 func (s *Server) handler() {
 	for {
 		request := <-s.requestChan
-		response := s.handle(request)
-		request.conn.Write(response.Bytes())
+		go func() {
+			response := s.handle(request)
+			request.conn.Write(response.Bytes())
+		}()
 	}
 }
 
