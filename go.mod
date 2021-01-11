@@ -1,6 +1,6 @@
-module github.com/zhangrxiang/mbserver
+module github.com/zing-dev/mbserver
 
-go 1.12
+go 1.15
 
 require (
 	github.com/goburrow/modbus v0.1.0
