@@ -26,8 +26,8 @@ func NewTCPFrame(packet []byte) (*TCPFrame, error) {
 		TransactionIdentifier: binary.BigEndian.Uint16(packet[0:2]),
 		ProtocolIdentifier:    binary.BigEndian.Uint16(packet[2:4]),
 		Length:                binary.BigEndian.Uint16(packet[4:6]),
-		Device:                uint8(packet[6]),
-		Function:              uint8(packet[7]),
+		Device:                packet[6],
+		Function:              packet[7],
 		Data:                  packet[8:],
 	}
 
@@ -41,8 +41,8 @@ func NewTCPFrame(packet []byte) (*TCPFrame, error) {
 
 // Copy the TCPFrame.
 func (frame *TCPFrame) Copy() Framer {
-	copy := *frame
-	return &copy
+	tcpFrame := *frame
+	return &tcpFrame
 }
 
 // Bytes returns the Modbus byte stream based on the TCPFrame fields

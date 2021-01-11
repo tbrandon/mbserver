@@ -29,8 +29,8 @@ func NewRTUFrame(packet []byte) (*RTUFrame, error) {
 	}
 
 	frame := &RTUFrame{
-		Address:  uint8(packet[0]),
-		Function: uint8(packet[1]),
+		Address:  packet[0],
+		Function: packet[1],
 		Data:     packet[2 : pLen-2],
 	}
 
@@ -39,8 +39,8 @@ func NewRTUFrame(packet []byte) (*RTUFrame, error) {
 
 // Copy the RTUFrame.
 func (frame *RTUFrame) Copy() Framer {
-	copy := *frame
-	return &copy
+	rtuFrame := *frame
+	return &rtuFrame
 }
 
 // Bytes returns the Modbus byte stream based on the RTUFrame fields
