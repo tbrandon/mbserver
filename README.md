@@ -30,7 +30,7 @@ The golang [mbserver documentation](https://godoc.org/github.com/tbrandon/mbserv
 
 Create a Modbus TCP Server (Slave):
 
-```
+```go
 package main
 
 import (
@@ -59,7 +59,7 @@ Modbus typically uses port 502 (standard users require special permissions to li
 Change the address to 0.0.0.0 to listen on all network interfaces.
 
 An example of a client writing and reading holding regsiters:
-```
+```go
 package main
 
 import (
@@ -97,7 +97,7 @@ The Golang Modbus Server can listen on multiple TCP ports and serial devices.
 In the following example, the Modbus server will be configured to listen on
 127.0.0.1:1502, 0.0.0.0:3502, /dev/ttyUSB0 and /dev/ttyACM0
 
-```
+```go
 	serv := mbserver.NewServer()
 	err := serv.ListenTCP("127.0.0.1:1502")
 	if err != nil {
@@ -147,13 +147,13 @@ Information on [serial port settings](https://godoc.org/github.com/goburrow/seri
 ## Server Customization
 
  RegisterFunctionHandler allows the default server functionality to be overridden for a Modbus function code.
- ```
+ ```go
 func (s *Server) RegisterFunctionHandler(funcCode uint8, function func(*Server, Framer) ([]byte, *Exception))
  ```
 
 Example of overriding the default ReadDiscreteInputs funtion:
 
-```
+```go
 serv := NewServer()
 
 // Override ReadDiscreteInputs function.
@@ -209,7 +209,7 @@ if err != nil {
 fmt.Printf("results %v\n", results)
 ```
 Output:
-```
+```go
 results [255 255]
 ```
 
