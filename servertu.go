@@ -15,13 +15,25 @@ func (s *Server) ListenRTU(serialConfig *serial.Config) (err error) {
 		log.Fatalf("failed to open %s: %v\n", serialConfig.Address, err)
 	}
 	s.ports = append(s.ports, port)
-	go s.acceptSerialRequests(port)
+
+	s.portsWG.Add(1)
+	go func() {
+		defer s.portsWG.Done()
+		s.acceptSerialRequests(port)
+	}()
+
 	return err
 }
 
 func (s *Server) acceptSerialRequests(port serial.Port) {
 	SkipFrameError:
 	for {
+		select {
+		case <-s.portsCloseChan:
+			return
+		default:
+		}
+
 		buffer := make([]byte, 512)
 
 		bytesRead, err := port.Read(buffer)
