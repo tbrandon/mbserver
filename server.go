@@ -4,6 +4,7 @@ package mbserver
 import (
 	"io"
 	"net"
+	"sync"
 
 	"github.com/goburrow/serial"
 )
@@ -14,6 +15,8 @@ type Server struct {
 	Debug            bool
 	listeners        []net.Listener
 	ports            []serial.Port
+	portsWG          sync.WaitGroup
+	portsCloseChan   chan struct{}
 	requestChan      chan *Request
 	function         [256](func(*Server, Framer) ([]byte, *Exception))
 	DiscreteInputs   []byte
@@ -49,6 +52,8 @@ func NewServer() *Server {
 	s.function[16] = WriteHoldingRegisters
 
 	s.requestChan = make(chan *Request)
+	s.portsCloseChan = make(chan struct{})
+
 	go s.handler()
 
 	return s
@@ -94,6 +99,10 @@ func (s *Server) Close() {
 	for _, listen := range s.listeners {
 		listen.Close()
 	}
+
+	close(s.portsCloseChan)
+	s.portsWG.Wait()
+
 	for _, port := range s.ports {
 		port.Close()
 	}
