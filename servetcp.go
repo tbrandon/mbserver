@@ -1,6 +1,7 @@
 package mbserver
 
 import (
+	"crypto/tls"
 	"io"
 	"log"
 	"net"
@@ -52,6 +53,18 @@ func (s *Server) ListenTCP(addressPort string) (err error) {
 	listen, err := net.Listen("tcp", addressPort)
 	if err != nil {
 		log.Printf("Failed to Listen: %v\n", err)
+		return err
+	}
+	s.listeners = append(s.listeners, listen)
+	go s.accept(listen)
+	return err
+}
+
+// ListenTLS starts the Modbus server listening on "address:port".
+func (s *Server) ListenTLS(addressPort string, config *tls.Config) (err error) {
+	listen, err := tls.Listen("tcp", addressPort, config)
+	if err != nil {
+		log.Printf("Failed to Listen on TLS: %v\n", err)
 		return err
 	}
 	s.listeners = append(s.listeners, listen)
