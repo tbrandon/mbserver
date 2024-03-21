@@ -2,13 +2,20 @@ package mbserver
 
 import (
 	"crypto/tls"
+	"fmt"
 	"io"
 	"log"
 	"net"
 	"strings"
 )
 
-func (s *Server) accept(listen net.Listener) error {
+func (s *Server) accept(addressPort string) error {
+	listen, ok := s.listeners[addressPort]
+	if !ok {
+		err := fmt.Errorf("listener not found: %s", addressPort)
+		log.Printf("%v\n", err)
+		return err
+	}
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
@@ -34,7 +41,7 @@ func (s *Server) accept(listen net.Listener) error {
 				// Set the length of the packet to the number of read bytes.
 				packet = packet[:bytesRead]
 
-				frame, err := NewTCPFrame(packet)
+				frame, err := NewTCPFrame(addressPort, packet)
 				if err != nil {
 					log.Printf("bad packet error %v\n", err)
 					return
@@ -55,8 +62,9 @@ func (s *Server) ListenTCP(addressPort string) (err error) {
 		log.Printf("Failed to Listen: %v\n", err)
 		return err
 	}
-	s.listeners = append(s.listeners, listen)
-	go s.accept(listen)
+
+	s.listeners[addressPort] = listen
+	go s.accept(addressPort)
 	return err
 }
 
@@ -67,7 +75,7 @@ func (s *Server) ListenTLS(addressPort string, config *tls.Config) (err error) {
 		log.Printf("Failed to Listen on TLS: %v\n", err)
 		return err
 	}
-	s.listeners = append(s.listeners, listen)
-	go s.accept(listen)
+	s.listeners[addressPort] = listen
+	go s.accept(addressPort)
 	return err
 }
