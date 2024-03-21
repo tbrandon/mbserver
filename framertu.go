@@ -7,14 +7,15 @@ import (
 
 // RTUFrame is the Modbus TCP frame.
 type RTUFrame struct {
-	Address  uint8
-	Function uint8
-	Data     []byte
-	CRC      uint16
+	listenerName string
+	Address      uint8
+	Function     uint8
+	Data         []byte
+	CRC          uint16
 }
 
 // NewRTUFrame converts a packet to a Modbus TCP frame.
-func NewRTUFrame(packet []byte) (*RTUFrame, error) {
+func NewRTUFrame(listenerName string, packet []byte) (*RTUFrame, error) {
 	// Check the that the packet length.
 	if len(packet) < 5 {
 		return nil, fmt.Errorf("RTU Frame error: packet less than 5 bytes: %v", packet)
@@ -29,12 +30,18 @@ func NewRTUFrame(packet []byte) (*RTUFrame, error) {
 	}
 
 	frame := &RTUFrame{
-		Address:  uint8(packet[0]),
-		Function: uint8(packet[1]),
-		Data:     packet[2 : pLen-2],
+		listenerName: listenerName,
+		Address:      uint8(packet[0]),
+		Function:     uint8(packet[1]),
+		Data:         packet[2 : pLen-2],
 	}
 
 	return frame, nil
+}
+
+// GetListenerName returns the listener name.
+func (frame *RTUFrame) GetListenerName() string {
+	return frame.listenerName
 }
 
 // Copy the RTUFrame.

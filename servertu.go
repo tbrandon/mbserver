@@ -14,19 +14,24 @@ func (s *Server) ListenRTU(serialConfig *serial.Config) (err error) {
 	if err != nil {
 		log.Fatalf("failed to open %s: %v\n", serialConfig.Address, err)
 	}
-	s.ports = append(s.ports, port)
+	s.ports[serialConfig.Address] = port
 
 	s.portsWG.Add(1)
 	go func() {
 		defer s.portsWG.Done()
-		s.acceptSerialRequests(port)
+		s.acceptSerialRequests(serialConfig.Address)
 	}()
 
 	return err
 }
 
-func (s *Server) acceptSerialRequests(port serial.Port) {
-	SkipFrameError:
+func (s *Server) acceptSerialRequests(serialAddr string) {
+	port, ok := s.ports[serialAddr]
+	if !ok {
+		log.Printf("serial port not found: %s\n", serialAddr)
+		return
+	}
+SkipFrameError:
 	for {
 		select {
 		case <-s.portsCloseChan:
@@ -49,10 +54,10 @@ func (s *Server) acceptSerialRequests(port serial.Port) {
 			// Set the length of the packet to the number of read bytes.
 			packet := buffer[:bytesRead]
 
-			frame, err := NewRTUFrame(packet)
+			frame, err := NewRTUFrame(serialAddr, packet)
 			if err != nil {
 				log.Printf("bad serial frame error %v\n", err)
-				//The next line prevents RTU server from exiting when it receives a bad frame. Simply discard the erroneous 
+				//The next line prevents RTU server from exiting when it receives a bad frame. Simply discard the erroneous
 				//frame and wait for next frame by jumping back to the beginning of the 'for' loop.
 				log.Printf("Keep the RTU server running!!\n")
 				continue SkipFrameError

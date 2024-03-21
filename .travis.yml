@@ -5,6 +5,7 @@ sudo: required
 go:
   - 1.7.x
   - 1.8.x
+  - 1.20.x
 
 before_install:
   - sudo apt-get install -y socat
