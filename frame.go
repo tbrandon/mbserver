@@ -10,6 +10,7 @@ type Framer interface {
 	GetFunction() uint8
 	SetException(exception *Exception)
 	SetData(data []byte)
+	GetListenerName() string
 }
 
 // GetException retunrns the Modbus exception or Success (indicating not exception).

@@ -7,6 +7,7 @@ import (
 
 // TCPFrame is the Modbus TCP frame.
 type TCPFrame struct {
+	listenerName          string
 	TransactionIdentifier uint16
 	ProtocolIdentifier    uint16
 	Length                uint16
@@ -16,13 +17,14 @@ type TCPFrame struct {
 }
 
 // NewTCPFrame converts a packet to a Modbus TCP frame.
-func NewTCPFrame(packet []byte) (*TCPFrame, error) {
+func NewTCPFrame(listenerName string, packet []byte) (*TCPFrame, error) {
 	// Check if the packet is too short.
 	if len(packet) < 9 {
 		return nil, fmt.Errorf("TCP Frame error: packet less than 9 bytes")
 	}
 
 	frame := &TCPFrame{
+		listenerName:          listenerName,
 		TransactionIdentifier: binary.BigEndian.Uint16(packet[0:2]),
 		ProtocolIdentifier:    binary.BigEndian.Uint16(packet[2:4]),
 		Length:                binary.BigEndian.Uint16(packet[4:6]),
@@ -37,6 +39,11 @@ func NewTCPFrame(packet []byte) (*TCPFrame, error) {
 	}
 
 	return frame, nil
+}
+
+// GetListenerName returns the listener name.
+func (frame *TCPFrame) GetListenerName() string {
+	return frame.listenerName
 }
 
 // Copy the TCPFrame.

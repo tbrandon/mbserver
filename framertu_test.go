@@ -3,7 +3,7 @@ package mbserver
 import "testing"
 
 func TestNewRTUFrame(t *testing.T) {
-	frame, err := NewRTUFrame([]byte{0x01, 0x04, 0x02, 0xFF, 0xFF, 0xB8, 0x80})
+	frame, err := NewRTUFrame("test", []byte{0x01, 0x04, 0x02, 0xFF, 0xFF, 0xB8, 0x80})
 	if !isEqual(nil, err) {
 		t.Fatalf("expected %v, got %v", nil, err)
 	}
@@ -22,7 +22,7 @@ func TestNewRTUFrame(t *testing.T) {
 }
 
 func TestNewRTUFrameShortPacket(t *testing.T) {
-	_, err := NewRTUFrame([]byte{0x01, 0x04, 0xFF, 0xFF})
+	_, err := NewRTUFrame("test", []byte{0x01, 0x04, 0xFF, 0xFF})
 	if err == nil {
 		t.Fatalf("expected error not nil, got %v", err)
 	}
@@ -30,7 +30,7 @@ func TestNewRTUFrameShortPacket(t *testing.T) {
 
 func TestNewRTUFrameBadCRC(t *testing.T) {
 	// Bad CRC: 0x81 (should be 0x80)
-	_, err := NewRTUFrame([]byte{0x01, 0x04, 0x02, 0xFF, 0xFF, 0xB8, 0x81})
+	_, err := NewRTUFrame("test", []byte{0x01, 0x04, 0x02, 0xFF, 0xFF, 0xB8, 0x81})
 	if err == nil {
 		t.Fatalf("expected error not nil, got %v", err)
 	}
@@ -45,6 +45,18 @@ func TestRTUFrameBytes(t *testing.T) {
 
 	got := frame.Bytes()
 	expect := []byte{0x01, 0x04, 0x02, 0xFF, 0xFF, 0xB8, 0x80}
+	if !isEqual(expect, got) {
+		t.Errorf("expected %v, got %v", expect, got)
+	}
+}
+
+func TestFrameRTUGetListenerName(t *testing.T) {
+	frame := &RTUFrame{
+		listenerName: "test",
+	}
+
+	got := frame.GetListenerName()
+	expect := "test"
 	if !isEqual(expect, got) {
 		t.Errorf("expected %v, got %v", expect, got)
 	}

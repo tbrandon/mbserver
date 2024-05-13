@@ -13,8 +13,8 @@ import (
 type Server struct {
 	// Debug enables more verbose messaging.
 	Debug            bool
-	listeners        []net.Listener
-	ports            []serial.Port
+	listeners        map[string]net.Listener
+	ports            map[string]serial.Port
 	portsWG          sync.WaitGroup
 	portsCloseChan   chan struct{}
 	requestChan      chan *Request
@@ -33,7 +33,10 @@ type Request struct {
 
 // NewServer creates a new Modbus server (slave).
 func NewServer() *Server {
-	s := &Server{}
+	s := &Server{
+		listeners: make(map[string]net.Listener),
+		ports:     make(map[string]serial.Port),
+	}
 
 	// Allocate Modbus memory maps.
 	s.DiscreteInputs = make([]byte, 65536)
